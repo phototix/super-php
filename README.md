@@ -34,4 +34,13 @@
 - Rapid prototyping of PHP applications.
 - Building modular applications with an easy-to-use autoloading mechanism.
 
+### CLI Support:
+
+- Detects if the script is running in CLI mode using php_sapi_name().
+- Accepts the HTTP method, URI, and JSON body as command-line arguments.
+- Example CLI usage:
+
+`php run.php POST /submit '{"name":"John", "age":30}'`
+
+
 **Super PHP** is ideal for developers seeking a clean, simple, and customizable framework to manage dynamic PHP requests and responses effectively.

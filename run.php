@@ -12,22 +12,27 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// Ensure the script is run in a web server environment
-if (php_sapi_name() === 'cli') {
-    die("This script must be run on a web server.\n");
-}
+// Determine the request context (CLI or web server)
+$isCli = php_sapi_name() === 'cli';
 
-// Handle the incoming request dynamically
-$requestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
-$requestUri = $_SERVER['REQUEST_URI'] ?? null;
+if ($isCli) {
+    // Handle CLI requests
+    $requestMethod = strtoupper($argv[1] ?? 'GET'); // First argument is the method (default: GET)
+    $requestUri = $argv[2] ?? '/'; // Second argument is the URI (default: /)
+    $queryParams = []; // Query parameters are not supported in CLI mode
+    $bodyParams = json_decode($argv[3] ?? '{}', true) ?? []; // Third argument is the JSON body (optional)
+} else {
+    // Handle web server requests
+    $requestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
+    $requestUri = $_SERVER['REQUEST_URI'] ?? null;
+    $requestUri = strtok($requestUri, '?'); // Remove query string
+    $queryParams = $_GET; // Query parameters (if any)
+    $bodyParams = json_decode(file_get_contents('php://input'), true) ?? []; // JSON or form data
+}
 
 if (!$requestMethod || !$requestUri) {
-    die("Invalid request. Ensure this script is running in a web server environment.\n");
+    die("Invalid request. Ensure this script is running in a proper environment.\n");
 }
-
-$requestUri = strtok($requestUri, '?'); // Remove query string
-$queryParams = $_GET; // Query parameters (if any)
-$bodyParams = json_decode(file_get_contents('php://input'), true) ?? []; // JSON or form data
 
 // Basic routing structure
 $routes = [
@@ -67,6 +72,13 @@ $response = is_callable($handler) ? $handler($bodyParams) : ["status" => 500, "m
 header('Content-Type: application/json');
 http_response_code($response['status'] ?? 200);
 echo json_encode($response);
+
+if ($isCli) {
+    // Provide CLI-friendly output
+    echo "\nCLI Response:\n";
+    print_r($response);
+    echo "\n";
+}
 
 /**
  * Example Modules:
