@@ -53,7 +53,7 @@ registerRoute('GET', '/', function () {
     return ["status" => 200, "message" => "Welcome to Super PHP!"];
 });
 
-registerRoute('POST', '/submit', function ($bodyParams) {
+registerRoute('POST', '/', function ($bodyParams) {
     return ["status" => 200, "message" => "Data received.", "data" => $bodyParams];
 });
 
