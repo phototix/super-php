@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Super PHP: A simple, dynamic PHP router and request handler.
  */
@@ -11,9 +12,20 @@ spl_autoload_register(function ($class) {
     }
 });
 
+// Ensure the script is run in a web server environment
+if (php_sapi_name() === 'cli') {
+    die("This script must be run on a web server.\n");
+}
+
 // Handle the incoming request dynamically
-$requestMethod = $_SERVER['REQUEST_METHOD'];
-$requestUri = strtok($_SERVER['REQUEST_URI'], '?'); // Remove query string
+$requestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
+$requestUri = $_SERVER['REQUEST_URI'] ?? null;
+
+if (!$requestMethod || !$requestUri) {
+    die("Invalid request. Ensure this script is running in a web server environment.\n");
+}
+
+$requestUri = strtok($requestUri, '?'); // Remove query string
 $queryParams = $_GET; // Query parameters (if any)
 $bodyParams = json_decode(file_get_contents('php://input'), true) ?? []; // JSON or form data
 
@@ -26,9 +38,10 @@ $routes = [
 ];
 
 // Define a function to register routes
-define('registerRoute', function ($method, $path, $handler) use (&$routes) {
+function registerRoute($method, $path, $handler) {
+    global $routes;
     $routes[strtoupper($method)][$path] = $handler;
-});
+}
 
 // Register routes (Example handlers)
 registerRoute('GET', '/', function () {
